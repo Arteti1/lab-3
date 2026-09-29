@@ -1,196 +1,151 @@
-# ============================= УВАГА! =============================
-# Цей файл містить ПРИКЛАД виконання лабораторної роботи.
-# Ваше завдання - розробити ВЛАСНУ програму згідно з вашим варіантом.
-#
-# Ви можете використовувати цей код як зразок, але не копіювати його.
-# Повністю замініть цей код своєю реалізацією.
-#
-# Ваш код повинен відповідати таким вимогам:
-# 1. Обрана предметна область згідно з вашим варіантом.
-# 2. Реалізовано всі необхідні функції:
-#    - додавання, видалення, оновлення даних
-#    - пошук та фільтрація
-#    - обчислення статистик (середнє, min/max)
-#    - групування та агрегація
-# 3. Використано map(), filter(), reduce(), сортування, зрізи.
-# 4. Реалізовано операції з множинами та словниками.
-# 5. Створено інтерактивне меню для користувача.
-# =================================================================
-
-from collections import defaultdict
 from functools import reduce
-import datetime
-
-# Приклад: Аналіз даних про продажі
-# ЗАМІНІТЬ ЦІ ДАНІ ТА ЛОГІКУ НА ВАШІ ВЛАСНІ
-
-# 1. Підготовка даних
-sales_data = [
-    {"date": "2023-01-01", "product": "Laptop", "category": "Electronics", "price": 1200, "quantity": 5},
-    {"date": "2023-01-02", "product": "Smartphone", "category": "Electronics", "price": 800, "quantity": 10},
-    {"date": "2023-01-03", "product": "T-shirt", "category": "Clothing", "price": 20, "quantity": 50},
-    {"date": "2023-01-04", "product": "Jeans", "category": "Clothing", "price": 60, "quantity": 30},
-    {"date": "2023-01-05", "product": "Keyboard", "category": "Electronics", "price": 75, "quantity": 20},
+reviews_data = [
+    {"product": "Ноутбук ASUS ROG", "rating": 5, "comment": "Тягне всі ігри на ультрах, топ за свої гроші"},
+    {"product": "Мишка Logitech G Pro", "rating": 4, "comment": "Зручна, але з'явився даблклік через півроку"},
+    {"product": "Навушники Apple AirPods Pro", "rating": 5, "comment": "Шумодав працює ідеально, звук кайф"},
+    {"product": "Монітор Samsung Odyssey", "rating": 3, "comment": "Є биті пікселі з коробки, довелось міняти"},
+    {"product": "Клавіатура HyperX Alloy", "rating": 5, "comment": "Механіка просто супер, натискання чіткі"},
+    {"product": "Ноутбук ASUS ROG", "rating": 2, "comment": "Гріється як пічка, кулери гудуть"},
+    {"product": "Смартфон iPhone 15", "rating": 4, "comment": "Камера вогонь, але батарея тримає слабкувато"},
+    {"product": "Смартфон iPhone 15", "rating": 5, "comment": "Перейшов з Андроїда, iOS працює дуже плавно"},
+    {"product": "Мікрофон HyperX QuadCast", "rating": 5, "comment": "Для стрімів та дискорду кращого не знайти"},
+    {"product": "Крісло Anda Seat", "rating": 3, "comment": "Спина не болить, але екошкіра почала тріскатись"}
 ]
 
-# 2. Функції для роботи з даними
-def add_sale(data, sale):
-    """Додає новий запис про продаж."""
-    data.append(sale)
-    print("Продаж додано успішно.")
-
-def remove_sale(data, index):
-    """Видаляє запис про продаж за індексом."""
-    if 0 <= index < len(data):
-        del data[index]
-        print("Продаж видалено успішно.")
+def add_review(reviews, review):
+    """ Додає новий відгук. """
+    reviews.append(review)
+    print("Відгук додано успішно.")
+def remove_review(reviews, index):
+    """ Видаляє відгук. """
+    if 0 <= index < len(reviews):
+        del reviews[index]
+        print("Відгук видалено")
     else:
         print("Невірний індекс.")
 
-def update_sale(data, index, key, value):
-    """Оновлює інформацію про продаж."""
-    if 0 <= index < len(data):
-        # Перетворення значення до відповідного типу
-        if key in ['price', 'quantity']:
-            try:
-                value = float(value) if key == 'price' else int(value)
-            except ValueError:
-                print(f"Невірний тип значення для ключа '{key}'")
-                return
-        data[index][key] = value
-        print("Інформацію оновлено успішно.")
+
+def update_review(reviews, index, key, value):
+    """ Оновлює відгук. """
+    if 0 <= index < len(reviews):
+        reviews[index][key] = value
+        print("Відгук оновлено успішно.")
     else:
         print("Невірний індекс.")
 
-def find_sales_by_product(data, product):
-    """Знаходить всі продажі конкретного продукту."""
-    return list(filter(lambda x: x["product"].lower() == product.lower(), data))
+def filter_by_rating(reviews, min_rating):
+    """Знаходить всі продажі з певним рейтингом."""
+    return list(filter(lambda x: x["rating"] >= min_rating, reviews))
 
-# 3. Специфічні функції аналізу
-def calculate_total_sales(data):
-    """Обчислює загальну суму продажів."""
-    return reduce(lambda acc, sale: acc + sale["price"] * sale["quantity"], data, 0)
+def extract_all_comments(reviews):
+    """Витягує всі коментарі з бази."""
+    return list(map(lambda x: x["comment"], reviews))
 
-def calculate_average_price(data):
-    """Обчислює середню ціну товару."""
-    prices = [sale["price"] for sale in data]
-    return sum(prices) / len(prices) if prices else 0
+def calculate_average_rating(reviews):
+    """Обчислює середній рейтинг."""
+    if len(reviews) == 0:
+        return 0
+    # reduce накопичує суму всіх рейтингів у змінну acc
+    total_rating = reduce(lambda acc, x: acc + x["rating"], reviews, 0)
+    return total_rating / len(reviews)
 
-# 4. Вбудовані функції та методи
-def sort_sales_by_date(data):
-    """Сортує продажі за датою."""
-    return sorted(data, key=lambda x: datetime.datetime.strptime(x["date"], "%Y-%m-%d"))
+def get_unique_products(reviews):
+    """Отримує перелік унікальних товарів."""
+    return set(x["product"] for x in reviews)
 
-# 5. Робота з множинами та словниками
-def group_sales_by_category(data):
-    """Групує продажі за категоріями."""
-    categories = defaultdict(list)
-    for sale in data:
-        categories[sale["category"]].append(sale)
-    return dict(categories)
+def count_reviews_per_product(reviews):
+    """Рахує кількість відгуків для кожного товару."""
+    frequency = {}
+    for x in reviews:
+        product_name = x["product"]
+        if product_name in frequency:
+            frequency[product_name] += 1
+        else:
+            frequency[product_name] = 1
+    return frequency
 
-def find_best_selling_product(data):
-    """Знаходить товар, який найкраще продається."""
-    if not data:
-        return None
-    products = defaultdict(int)
-    for sale in data:
-        products[sale["product"]] += sale["quantity"]
-    return max(products, key=products.get)
 
-# 6. Інтерактивне меню
 def print_menu():
-    """Виводить меню опцій."""
-    print("\n==== Меню аналізу продажів (ПРИКЛАД) ====")
-    print("1. Показати всі продажі")
-    print("2. Додати новий продаж")
-    print("3. Видалити продаж")
-    print("4. Оновити інформацію про продаж")
-    print("5. Знайти продажі за назвою товару")
-    print("6. Обчислити загальну суму продажів")
-    print("7. Групувати продажі за категоріями")
-    print("8. Сортувати продажі за датою")
-    print("9. Знайти товар, який найкраще продається")
-    print("10. Обчислити середню ціну товару")
+    print("\n==== Меню аналізу відгуків ====")
+    print("1. Показати всі відгуки")
+    print("2. Додати новий відгук")
+    print("3. Видалити відгук")
+    print("4. Оновити відгук")
+    print("5. Фільтрувати за мінімальним рейтингом")
+    print("6. Показати всі коментарі (map)")
+    print("7. Середній рейтинг (reduce)")
+    print("8. Унікальні товари (set)")
+    print("9. Кількість відгуків на товар (dict)")
     print("0. Вийти")
 
 def main():
-    """Головна функція програми."""
-    global sales_data
     while True:
         print_menu()
         choice = input("Оберіть опцію: ")
-
-        if choice == "1":
-            if not sales_data:
-                print("Немає даних про продажі.")
-            for i, sale in enumerate(sales_data):
-                print(f"{i}: {sale}")
-        elif choice == "2":
+        
+        if choice == '1':
+            for i, r in enumerate(reviews_data):
+                print(f"{i}: {r}")
+                
+        elif choice == '2':
+            prod = input("Назва товару: ")
             try:
-                date = input("Введіть дату (YYYY-MM-DD): ")
-                datetime.datetime.strptime(date, "%Y-%m-%d") # перевірка формату
-                product = input("Введіть назву товару: ")
-                category = input("Введіть категорію: ")
-                price = float(input("Введіть ціну: "))
-                quantity = int(input("Введіть кількість: "))
-                new_sale = {"date": date, "product": product, "category": category, "price": price, "quantity": quantity}
-                add_sale(sales_data, new_sale)
+                rat = int(input("Рейтинг (1-5): "))
+                com = input("Коментар: ")
+                add_review(reviews_data, {"product": prod, "rating": rat, "comment": com})
             except ValueError:
-                print("Помилка введення. Перевірте формат дати, ціни та кількості.")
-        elif choice == "3":
+                print("Помилка: рейтинг має бути числом!")
+                
+        elif choice == '3':
             try:
-                index = int(input("Введіть індекс продажу для видалення: "))
-                remove_sale(sales_data, index)
+                idx = int(input("Індекс для видалення: "))
+                remove_review(reviews_data, idx)
             except ValueError:
-                print("Невірний індекс. Введіть число.")
-        elif choice == "4":
+                print("Помилка: індекс має бути числом!")
+                
+        elif choice == '4':
             try:
-                index = int(input("Введіть індекс продажу для оновлення: "))
-                if not (0 <= index < len(sales_data)):
-                    print("Невірний індекс.")
-                    continue
-                key = input("Введіть ключ для оновлення (date/product/category/price/quantity): ")
-                if key not in sales_data[0]:
-                    print("Невірний ключ.")
-                    continue
-                value = input("Введіть нове значення: ")
-                update_sale(sales_data, index, key, value)
+                idx = int(input("Індекс для оновлення: "))
+                key = input("Ключ (product/rating/comment): ")
+                val = input("Нове значення: ")
+                # Якщо оновлюємо рейтинг, перетворюємо його на число
+                if key == "rating":
+                    val = int(val)
+                update_review(reviews_data, idx, key, val)
             except ValueError:
-                print("Невірний індекс. Введіть існуючий числовий індекс.")
-        elif choice == "5":
-            product = input("Введіть назву товару для пошуку: ")
-            results = find_sales_by_product(sales_data, product)
-            if results:
-                for sale in results:
-                    print(sale)
-            else:
-                print(f"Продажі для товару '{product}' не знайдено.")
-        elif choice == "6":
-            total = calculate_total_sales(sales_data)
-            print(f"Загальна сума продажів: {total}")
-        elif choice == "7":
-            grouped = group_sales_by_category(sales_data)
-            for category, sales in grouped.items():
-                print(f"\nКатегорія: {category}:")
-                for sale in sales:
-                    print(f"  {sale}")
-        elif choice == "8":
-            sorted_sales = sort_sales_by_date(sales_data)
-            for sale in sorted_sales:
-                print(sale)
-        elif choice == "9":
-            best_product = find_best_selling_product(sales_data)
-            if best_product:
-                print(f"Товар, який найкраще продається: {best_product}")
-            else:
-                print("Немає даних для аналізу.")
-        elif choice == "10":
-            avg_price = calculate_average_price(sales_data)
-            print(f"Середня ціна товару: {avg_price:.2f}")
-        elif choice == "0":
-            print("Дякуємо за використання програми!")
+                print("Помилка вводу індексу або рейтингу!")
+                
+        elif choice == '5':
+            try:
+                min_r = int(input("Мінімальний рейтинг: "))
+                res = filter_by_rating(reviews_data, min_r)
+                for r in res:
+                    print(r)
+            except ValueError:
+                print("Помилка вводу!")
+                
+        elif choice == '6':
+            comments = extract_all_comments(reviews_data)
+            for c in comments:
+                print(f"- {c}")
+                
+        elif choice == '7':
+            avg = calculate_average_rating(reviews_data)
+            print(f"Середній рейтинг: {avg:.2f}")
+            
+        elif choice == '8':
+            uniq = get_unique_products(reviews_data)
+            print(f"Унікальні товари: {uniq}")
+            
+        elif choice == '9':
+            counts = count_reviews_per_product(reviews_data)
+            for p, c in counts.items():
+                print(f"{p}: {c} відгуків")
+                
+        elif choice == '0':
+            print("Роботу програми завершено.")
             break
+            
         else:
             print("Невірний вибір. Спробуйте ще раз.")
 
